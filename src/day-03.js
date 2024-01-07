@@ -1,12 +1,14 @@
-const isNotDigit = (val) => /[^\d]/.test(val);
+const CHALLENGE_NUM = 2;
+
+const isDigit = (val) => /\d/.test(val);
 
 function findStart(x, y, arr) {
-  if (isNotDigit(arr[y][x - 1])) return { x, y };
+  if (!isDigit(arr[y][x - 1])) return { x, y };
   return findStart(x - 1, y, arr);
 }
 
 function getWholeNumber({ x, y }, arr, num = '') {
-  if (isNotDigit(arr[y][x])) return num;
+  if (!isDigit(arr[y][x])) return Number(num);
   const newNum = `${num}${arr[y][x]}`;
   // Replace number with `.` to avoid finding the same number twice
   arr[y][x] = '.';
@@ -20,10 +22,10 @@ function getAdjacentNumbers({ x, y }, arr) {
     for (let j = -1; j < 2; j++) {
       if (arr[y + i]) {
         const maybeNum = arr[y + i][x + j];
-        if (/\d/.test(maybeNum)) {
+        if (isDigit(maybeNum)) {
           const startCoords = findStart(x + j, y + i, arr);
           const wholeNumber = getWholeNumber(startCoords, arr);
-          nums.push(Number(wholeNumber));
+          nums.push(wholeNumber);
         }
       }
     }
@@ -32,16 +34,70 @@ function getAdjacentNumbers({ x, y }, arr) {
   return nums;
 }
 
+const regex = CHALLENGE_NUM === 1 ? new RegExp(/[^\d.]/) : new RegExp(/\*/);
+
 function findSymbolCoords(arr) {
   const coords = [];
   for (const [y, row] of arr.entries()) {
     for (const [x, colValue] of row.entries()) {
-      if (/[^\d.]/.test(colValue)) {
+      if (regex.test(colValue)) {
         coords.push({ x, y });
       }
     }
   }
   return coords;
+}
+
+function findGearRatios({ x, y }, arr) {
+  // any * symbol next to exactly two numbers
+  const nums = [];
+
+  // lol
+  if (isDigit(arr[y][x - 1])) {
+    const startCoords = findStart(x - 1, y, arr);
+    nums.push(getWholeNumber(startCoords, arr));
+  }
+
+  if (isDigit(arr[y][x + 1])) {
+    const startCoords = findStart(x + 1, y, arr);
+    nums.push(getWholeNumber(startCoords, arr));
+  }
+
+  if (arr[y - 1]) {
+    if (isDigit(arr[y - 1][x])) {
+      const startCoords = findStart(x, y - 1, arr);
+      nums.push(getWholeNumber(startCoords, arr));
+    } else {
+      if (isDigit(arr[y - 1][x - 1])) {
+        const startCoords = findStart(x - 1, y - 1, arr);
+        nums.push(getWholeNumber(startCoords, arr));
+      }
+      if (isDigit(arr[y - 1][x + 1])) {
+        const startCoords = findStart(x + 1, y - 1, arr);
+        nums.push(getWholeNumber(startCoords, arr));
+      }
+    }
+  }
+
+  if (arr[y + 1]) {
+    if (isDigit(arr[y + 1][x])) {
+      const startCoords = findStart(x, y + 1, arr);
+      nums.push(getWholeNumber(startCoords, arr));
+    } else {
+      if (isDigit(arr[y + 1][x - 1])) {
+        const startCoords = findStart(x - 1, y + 1, arr);
+        nums.push(getWholeNumber(startCoords, arr));
+      }
+      if (isDigit(arr[y + 1][x + 1])) {
+        const startCoords = findStart(x + 1, y + 1, arr);
+        nums.push(getWholeNumber(startCoords, arr));
+      }
+    }
+  }
+
+  // When exactly 2 adjacent numbers, multiply them together for the ratio
+  // Could also short circut this as soon as we have >2
+  return nums.length === 2 ? nums[0] * nums[1] : 0;
 }
 
 export default function main() {
@@ -51,7 +107,11 @@ export default function main() {
     .map((l) => l.split(''));
 
   const coords = findSymbolCoords(array);
-  const validNumbers = coords.flatMap((c) => getAdjacentNumbers(c, array));
+  const validNumbers = coords.flatMap((c) =>
+    CHALLENGE_NUM === 1
+      ? getAdjacentNumbers(c, array)
+      : findGearRatios(c, array),
+  );
   return validNumbers.reduce((a, c) => a + c, 0);
 }
 
