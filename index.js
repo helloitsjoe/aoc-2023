@@ -1,3 +1,3 @@
-import main from './src/day-04.js';
+import main from './src/day-05.js';
 
 console.log(main());
