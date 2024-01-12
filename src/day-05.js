@@ -1,4 +1,4 @@
-// const CHALLENGE_NUM = 1;
+const CHALLENGE_NUM = 1;
 
 // Convert seeds to locations and find the lowest location number
 
@@ -12,9 +12,25 @@ function getDestination(source, mappings) {
   return source;
 }
 
+function getSeeds(seeds) {
+  if (CHALLENGE_NUM === 1) return seeds;
+
+  const output = [];
+
+  for (let i = 0; i < seeds.length; i += 2) {
+    const [seedStart, seedRange] = [seeds[i], seeds[i + 1]];
+    for (let i = 0; i < seedRange; i++) {
+      output.push(seedStart + i);
+    }
+  }
+
+  return output;
+}
+
 export default function main() {
   const [seedLine, ...rest] = data.split('\n\n');
-  const seeds = seedLine.replace('seeds: ', '').split(' ').map(Number);
+  const seedNums = seedLine.replace('seeds: ', '').split(' ').map(Number);
+  const seeds = getSeeds(seedNums);
   const mapGroups = rest.map((group) =>
     group
       .split('\n')
