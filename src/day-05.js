@@ -1,4 +1,4 @@
-const CHALLENGE_NUM = 2;
+const CHALLENGE_NUM = Number(process.argv[2] || 1);
 
 // Convert seeds to locations and find the lowest location number
 
@@ -12,26 +12,26 @@ function getDestination(source, mappings) {
   return source;
 }
 
-function getSeeds(seeds) {
-  if (CHALLENGE_NUM === 1) return seeds;
+// TODO: Create lazy range iterator
 
-  const output = [];
+// function getSeeds(seeds) {
+//   if (CHALLENGE_NUM === 1) return seeds;
 
-  for (let i = 0; i < seeds.length; i += 2) {
-    const [seedStart, seedRange] = [seeds[i], seeds[i + 1]];
-    for (let i = 0; i < seedRange; i++) {
-      output.push(seedStart + i);
-    }
-  }
+//   const output = [];
 
-  return output;
-}
+//   for (let i = 0; i < seeds.length; i += 2) {
+//     const [seedStart, seedRange] = [seeds[i], seeds[i + 1]];
+//     for (let i = 0; i < seedRange; i++) {
+//       output.push(seedStart + i);
+//     }
+//   }
 
-export default function main() {
-  const [seedLine, ...rest] = data.split('\n\n');
-  const seedNums = seedLine.replace('seeds: ', '').split(' ').map(Number);
-  const seeds = getSeeds(seedNums);
-  console.log('seeds', seeds);
+//   return output;
+// }
+
+function parseInput(input) {
+  const [seedLine, ...rest] = input.split('\n\n');
+  const seedRanges = seedLine.replace('seeds: ', '').split(' ').map(Number);
   const mapGroups = rest.map((group) =>
     group
       .split('\n')
@@ -39,16 +39,38 @@ export default function main() {
       .map((line) => line.split(' ').map(Number)),
   );
 
-  let min = Infinity;
+  return { seedRanges, mapGroups };
+}
 
-  seeds.forEach((seed) => {
-    const dest = mapGroups.reduce((source, group) => {
-      return getDestination(source, group);
-    }, seed);
-    if (dest < min) {
-      min = dest;
+export default function main() {
+  const { seedRanges, mapGroups } = parseInput(data);
+
+  let min = Infinity;
+  if (CHALLENGE_NUM === 1) {
+    seedRanges.forEach((range) => {
+      const dest = mapGroups.reduce((source, group) => {
+        return getDestination(source, group);
+      }, range);
+      if (dest < min) {
+        min = dest;
+      }
+    });
+  } else {
+    // TODO: Need to find shortcut
+
+    for (let i = 0; i < seedRanges.length; i += 2) {
+      const [seedStart, seedRange] = [seedRanges[i], seedRanges[i + 1]];
+      for (let i = 0; i < seedRange; i++) {
+        const dest = mapGroups.reduce((source, group) => {
+          return getDestination(source, group);
+        }, seedStart + i);
+
+        if (dest < min) {
+          min = dest;
+        }
+      }
     }
-  });
+  }
 
   return min;
 }
