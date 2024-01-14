@@ -43,7 +43,7 @@ function parseInput(input) {
 }
 
 export default function main() {
-  const { seedRanges, mapGroups } = parseInput(data);
+  const { seedRanges, mapGroups } = parseInput(testData);
 
   let min = Infinity;
   if (CHALLENGE_NUM === 1) {
@@ -60,15 +60,16 @@ export default function main() {
 
     for (let i = 0; i < seedRanges.length; i += 2) {
       const [seedStart, seedRange] = [seedRanges[i], seedRanges[i + 1]];
-      for (let i = 0; i < seedRange; i++) {
-        const dest = mapGroups.reduce((source, group) => {
-          return getDestination(source, group);
-        }, seedStart + i);
+      // for (let i = 0; i < seedRange; i++) {
+      const destStart = mapGroups.reduce((source, group) => {
+        return getDestination(source, group);
+      }, seedStart + i);
+      console.log('destStart', destStart);
 
-        if (dest < min) {
-          min = dest;
-        }
+      if (destStart < min) {
+        min = destStart;
       }
+      // }
     }
   }
 
