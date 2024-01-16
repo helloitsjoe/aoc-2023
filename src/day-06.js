@@ -1,9 +1,9 @@
 export default function main() {
-  const [time, distance] = testData.split('\n').map((line) =>
+  const [, time, distance] = testData.split('\n').map((line) =>
     line
-      .replace(/(Time|Distance)\s+/, '')
-      .split(/\d+/)
-      .map((i) => console.log(i)),
+      .replace(/(Time|Distance):\s+/, '')
+      .split(/\s+/)
+      .map((i) => Number(i)),
   );
   console.log('time, distance', time, distance);
 }
