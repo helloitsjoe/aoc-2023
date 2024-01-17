@@ -1,33 +1,8 @@
-const CHALLENGE_NUM = Number(process.argv[2] || 1);
+import { Worker } from 'worker_threads';
+import { parseCli } from './utils.js';
+import { getDestination } from './day-05-utils.js';
 
-// Convert seeds to locations and find the lowest location number
-
-function getDestination(source, mappings) {
-  for (const [destStart, sourceStart, rangeLength] of mappings) {
-    if (source >= sourceStart && source < sourceStart + rangeLength) {
-      const offset = source - sourceStart;
-      return destStart + offset;
-    }
-  }
-  return source;
-}
-
-// TODO: Create lazy range iterator
-
-// function getSeeds(seeds) {
-//   if (CHALLENGE_NUM === 1) return seeds;
-
-//   const output = [];
-
-//   for (let i = 0; i < seeds.length; i += 2) {
-//     const [seedStart, seedRange] = [seeds[i], seeds[i + 1]];
-//     for (let i = 0; i < seedRange; i++) {
-//       output.push(seedStart + i);
-//     }
-//   }
-
-//   return output;
-// }
+const { CHALLENGE_NUM, dataType } = parseCli(process.argv);
 
 function parseInput(input) {
   const [seedLine, ...rest] = input.split('\n\n');
@@ -43,40 +18,54 @@ function parseInput(input) {
 }
 
 export default function main() {
-  const { seedRanges, mapGroups } = parseInput(data);
+  return new Promise((resolve) => {
+    const { seedRanges, mapGroups } = parseInput(data[dataType]);
 
-  let min = Infinity;
-  if (CHALLENGE_NUM === 1) {
-    seedRanges.forEach((range) => {
-      const dest = mapGroups.reduce((source, group) => {
-        return getDestination(source, group);
-      }, range);
-      if (dest < min) {
-        min = dest;
-      }
-    });
-  } else {
-    // TODO: Need to find shortcut
-    for (let i = 0; i < seedRanges.length; i += 2) {
-      const [seedStart, seedRange] = [seedRanges[i], seedRanges[i + 1]];
-      for (let i = 0; i < seedRange; i++) {
+    let min = Infinity;
+
+    if (CHALLENGE_NUM === 1) {
+      seedRanges.forEach((range) => {
         const dest = mapGroups.reduce((source, group) => {
           return getDestination(source, group);
-        }, seedStart + i);
-
+        }, range);
         if (dest < min) {
           min = dest;
         }
+      });
+
+      resolve(min);
+    } else {
+      let workersTotal = seedRanges.length / 2;
+      let workersFinished = 0;
+
+      for (let i = 0; i < seedRanges.length; i += 2) {
+        const [seedStart, seedRange] = [seedRanges[i], seedRanges[i + 1]];
+
+        const worker = new Worker('./src/day-05-worker', {
+          workerData: { seedStart, seedRange, mapGroups },
+        });
+
+        worker.on('message', (dest) => {
+          workersFinished++;
+          console.log(`${workersFinished} finished`);
+
+          if (dest < min) {
+            min = dest;
+          }
+
+          if (workersFinished === workersTotal) {
+            resolve(min);
+          }
+        });
       }
     }
-  }
-
-  return min;
+  });
 }
 
 // Each map has: 1. Destination range start, 2. Source range start, 3. Range length
 // Unmapped numbers map 1-to-1 from source to dest
-const testData = `
+const data = {
+  test: `
 seeds: 79 14 55 13
 
 seed-to-soil map:
@@ -109,9 +98,9 @@ temperature-to-humidity map:
 
 humidity-to-location map:
 60 56 37
-56 93 4`;
+56 93 4`,
 
-const data = `
+  final: `
 seeds: 919339981 562444630 3366006921 67827214 1496677366 101156779 4140591657 5858311 2566406753 71724353 2721360939 35899538 383860877 424668759 3649554897 442182562 2846055542 49953829 2988140126 256306471
 
 seed-to-soil map:
@@ -317,4 +306,5 @@ humidity-to-location map:
 2360034592 2019293723 57950337
 1377750239 1235472555 94247393
 1647757140 2247246174 9396637
-2434490733 4247201303 1535992`;
+2434490733 4247201303 1535992`,
+};
