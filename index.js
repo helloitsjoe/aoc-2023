@@ -1,4 +1,4 @@
-import main from './src/day-06.js';
+import main from './src/day-07.js';
 
 (async () => {
   const result = await main();
