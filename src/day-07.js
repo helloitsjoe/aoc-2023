@@ -2,27 +2,107 @@ import { parseCli } from './utils.js';
 
 const handRanks = ['11111', '1112', '122', '113', '23', '14', '5'];
 
-const makeGetLabelValue = (challengeNum) => (label) => {
+const getLabelValue = (label) => {
   // Challenge 2 turns J into Jokers
   const labels = challengeNum === 2 ? 'J0123456789TQKA' : '0123456789TJQKA';
   return labels.indexOf(label);
 };
 
-let getLabelValue = null;
+// let getLabelValue = null;
+let challengeNum = 1;
 
-function getHandRank(hand) {
-  // TODO: Consider Jokers for part 2
+// Jokers:
+// If 1: look for 4, then 3, then 2 pair (to make full house), then 2. Otherwise get highest to make a pair
+// If 2: look for 3, then 2 and 1 (to make full house), then highest
+// If 3: look for 2 and 1, otherwise highest
+// If 4: Make 5
+// If 5: Make 5 A
+
+function maybeJokersWild(handInput, cardsByLabelInput) {
+  if (challengeNum === 1) {
+    return { hand: handInput, cardsByLabel: cardsByLabelInput };
+  }
+
+  switch (cardsByLabelInput.J) {
+    case 5:
+      return { hand: 'AAAAA' };
+    case 4: {
+      const label = handInput.split('').find((l) => l !== 'J');
+      return { hand: label.repeat(5) };
+    }
+    case 3: {
+      // Repeated below
+      const pair = Object.entries(cardsByLabelInput).find(
+        ([, num]) => num === 2,
+      );
+      if (pair) {
+        const [pairLabel] = pair;
+        const hand = handInput.replaceAll('J', pairLabel);
+        return { hand };
+      }
+
+      // Repeated below
+      // Else find highest and match J
+      const highestLabel = handInput
+        .split('')
+        .reduce((a, c) => Math.max(a, getLabelValue(c)), -1);
+
+      const hand = handInput.replaceAll('J', highestLabel);
+      return { hand };
+    }
+    case 2: {
+      const triplet = Object.entries(cardsByLabelInput).find(
+        ([, num]) => num === 3,
+      );
+
+      if (triplet) {
+        const [tripLabel] = triplet;
+        const hand = handInput.replaceAll('J', tripLabel);
+        return { hand };
+      }
+
+      // Repeated above
+      const pair = Object.entries(cardsByLabelInput).find(
+        ([, num]) => num === 2,
+      );
+      if (pair) {
+        const [pairLabel] = pair;
+        const hand = handInput.replaceAll('J', pairLabel);
+        return { hand };
+      }
+
+      // Repeated above
+      // Else find highest and match J
+      const highestLabel = handInput
+        .split('')
+        .reduce((a, c) => Math.max(a, getLabelValue(c)), -1);
+
+      const hand = handInput.replaceAll('J', highestLabel);
+      return { hand };
+    }
+    default:
+      return { hand: handInput, cardsByLabel: cardsByLabelInput };
+  }
+}
+
+function getCardsByLabel(hand) {
   const cardsByLabel = {};
   for (const label of hand) {
     cardsByLabel[label] = (cardsByLabel[label] || 0) + 1;
   }
-  const handRank = Object.values(cardsByLabel).sort().join('');
-  return handRanks.indexOf(handRank);
+  return cardsByLabel;
 }
 
-function sortHands([hand1], [hand2]) {
-  const hand1Rank = getHandRank(hand1);
-  const hand2Rank = getHandRank(hand2);
+function getHandRank(handInput) {
+  const { hand } = maybeJokersWild(handInput, getCardsByLabel(handInput));
+  const cardsByLabel = getCardsByLabel(hand);
+  const handRank = Object.values(cardsByLabel).sort().join('');
+  return { rank: handRanks.indexOf(handRank), hand };
+}
+
+function sortHands([hand1Input], [hand2Input]) {
+  const { rank: hand1Rank, hand: hand1 } = getHandRank(hand1Input);
+  const { rank: hand2Rank, hand: hand2 } = getHandRank(hand2Input);
   // console.log('hand1, hand1Rank', hand1, hand1Rank);
   // console.log('hand2, hand2Rank', hand2, hand2Rank);
 
@@ -52,7 +132,8 @@ function getTotalWinnings(handsWithBids) {
 
 export default function main() {
   const { CHALLENGE_NUM, dataType } = parseCli(process.argv);
-  getLabelValue = makeGetLabelValue(CHALLENGE_NUM);
+  challengeNum = CHALLENGE_NUM;
+
   const hands = data[dataType]
     .trim()
     .split('\n')
