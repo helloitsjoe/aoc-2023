@@ -1,21 +1,23 @@
 import { parseCli } from './utils.js';
 
-let challengeNum = 1;
+globalThis.challengeNum = 1;
 
 const handRanks = ['11111', '1112', '122', '113', '23', '14', '5'];
 
-const getLabelValue = (label) => {
-  // Challenge 2 turns J into Jokers (wild)
-  const labels = challengeNum === 2 ? 'J0123456789TQKA' : '0123456789TJQKA';
-  return labels.indexOf(label);
-};
+// Challenge 2 turns J into Jokers (wild)
+// TODO: Set this for test
+const getLabels = () =>
+  globalThis.challengeNum === 2 ? 'J0123456789TQKA' : '0123456789TJQKA';
+
+const getLabelValue = (label) => getLabels().indexOf(label);
 
 function getHighestLabel(hand) {
-  const highestLabel = hand
+  const highestValueIdx = hand
     .split('')
     .reduce((a, c) => Math.max(a, getLabelValue(c)), -1);
+  const highestValueLabel = getLabels()[highestValueIdx];
 
-  return hand.replaceAll('J', highestLabel);
+  return hand.replaceAll('J', highestValueLabel);
 }
 
 function handlePair(hand, cardsByLabel) {
@@ -54,7 +56,7 @@ function handleQuad(hand, cardsByLabel) {
   return hand.replaceAll('J', quadLabel);
 }
 
-function maybeJokersWild(handInput, challenge) {
+export function maybeJokersWild(handInput, challenge) {
   if (challenge === 1) {
     return handInput;
   }
@@ -150,13 +152,13 @@ function getTotalWinnings(handsWithBids) {
 
 export default function main() {
   const { CHALLENGE_NUM, dataType } = parseCli(process.argv);
-  challengeNum = CHALLENGE_NUM;
+  globalThis.challengeNum = CHALLENGE_NUM;
 
   const hands = data[dataType]
     .trim()
     .split('\n')
     .map((l) => l.split(' '))
-    .map(([hand, bid]) => [maybeJokersWild(hand, challengeNum), bid])
+    .map(([hand, bid]) => [maybeJokersWild(hand), bid])
     .sort(sortHands);
 
   console.log('hands', hands);

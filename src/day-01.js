@@ -76,7 +76,6 @@ export default function main() {
   const numsPerLine = lines.map((l) => {
     let first = getFirst(l);
     let last = getLast(l);
-
     return Number(`${first}${last}`);
   });
   console.log('numsPerLine', numsPerLine);
