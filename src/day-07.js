@@ -150,9 +150,6 @@ export default function main() {
     }))
     .sort(sortHands);
 
-  for (const hand of hands) {
-    console.log(hand);
-  }
   return getTotalWinnings(hands);
 }
 
