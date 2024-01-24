@@ -25,16 +25,16 @@ describe('maybeJokersWild', () => {
 
 describe('one joker', () => {
   it.each`
-    hand       | transformed
-    ${'JAAAA'} | ${'AAAAA'}
-    ${'JKAAA'} | ${'AKAAA'}
-    ${'KJAAA'} | ${'KAAAA'}
-    ${'KJTAA'} | ${'KATAA'}
-    ${'TTJKA'} | ${'TTTKA'}
-    ${'KJTKT'} | ${'KKTKT'}
-    ${'9JT9T'} | ${'9TT9T'}
-    ${'9JT87'} | ${'9TT87'}
-  `('$hand', ({ hand, transformed }) => {
+    description                   | hand       | transformed
+    ${'5 of a kind'}              | ${'JAAAA'} | ${'AAAAA'}
+    ${'4 of a kind'}              | ${'JKAAA'} | ${'AKAAA'}
+    ${'4 of a kind, J not first'} | ${'KJAAA'} | ${'KAAAA'}
+    ${'3 of a kind'}              | ${'KJTAA'} | ${'KATAA'}
+    ${'3 of a kind 2'}            | ${'TTJKA'} | ${'TTTKA'}
+    ${'Full house high'}          | ${'KJTKT'} | ${'KKTKT'}
+    ${'Full house low'}           | ${'9JT9T'} | ${'9TT9T'}
+    ${'Pair'}                     | ${'9JT87'} | ${'9TT87'}
+  `('$description', ({ hand, transformed }) => {
     expect(maybeJokersWild(hand)).toBe(transformed);
   });
 });

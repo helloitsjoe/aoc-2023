@@ -5,7 +5,6 @@ globalThis.challengeNum = 1;
 const handRanks = ['11111', '1112', '122', '113', '23', '14', '5'];
 
 // Challenge 2 turns J into Jokers (wild)
-// TODO: Set this for test
 const getLabels = () =>
   globalThis.challengeNum === 2 ? 'J0123456789TQKA' : '0123456789TJQKA';
 
@@ -17,13 +16,13 @@ function getHighestLabel(hand) {
     .reduce((a, c) => Math.max(a, getLabelValue(c)), -1);
   const highestValueLabel = getLabels()[highestValueIdx];
 
-  return hand.replaceAll('J', highestValueLabel);
+  return hand.slice().replaceAll('J', highestValueLabel);
 }
 
 function handlePair(hand, cardsByLabel) {
   // This will turn one pair into two pair or two pair into full house
   const highestPair = Object.entries(cardsByLabel)
-    .filter(([, num]) => num === 2)
+    .filter(([label, num]) => label !== 'J' && num === 2)
     .sort(([aLabel], [bLabel]) =>
       getLabelValue(aLabel) > getLabelValue(bLabel) ? -1 : 1,
     )[0];
@@ -31,13 +30,7 @@ function handlePair(hand, cardsByLabel) {
   if (!highestPair) return null;
 
   const [pairLabel] = highestPair;
-  return hand.replaceAll('J', pairLabel);
-
-  // const pair = Object.entries(cardsByLabelInput).find(([, num]) => num === 2);
-  // if (!pair) return null;
-
-  // const [pairLabel] = pair;
-  // return handInput.replaceAll('J', pairLabel);
+  return hand.slice().replaceAll('J', pairLabel);
 }
 
 function handleTriplet(hand, cardsByLabel) {
@@ -45,7 +38,7 @@ function handleTriplet(hand, cardsByLabel) {
 
   if (!triplet) return null;
   const [tripLabel] = triplet;
-  return hand.replaceAll('J', tripLabel);
+  return hand.slice().replaceAll('J', tripLabel);
 }
 
 function handleQuad(hand, cardsByLabel) {
@@ -53,11 +46,11 @@ function handleQuad(hand, cardsByLabel) {
 
   if (!quad) return null;
   const [quadLabel] = quad;
-  return hand.replaceAll('J', quadLabel);
+  return hand.slice().replaceAll('J', quadLabel);
 }
 
-export function maybeJokersWild(handInput, challenge) {
-  if (challenge === 1) {
+export function maybeJokersWild(handInput) {
+  if (globalThis.challengeNum === 1) {
     return handInput;
   }
 
@@ -72,33 +65,24 @@ export function maybeJokersWild(handInput, challenge) {
     }
     case 3: {
       // Look for 2 and 1, otherwise highest
-      const handWithPair = handlePair(handInput, cardsByLabel);
-      if (handWithPair) return handWithPair;
-
-      return getHighestLabel(handInput);
+      return handlePair(handInput, cardsByLabel) || getHighestLabel(handInput);
     }
     case 2: {
       // Look for 3, then 2 and 1 (to make full house), then highest
-      const handWithTriplet = handleTriplet(handInput, cardsByLabel);
-      if (handWithTriplet) return handWithTriplet;
-
-      const handWithPair = handlePair(handInput, cardsByLabel);
-      if (handWithPair) return handWithPair;
-
-      return getHighestLabel(handInput);
+      return (
+        handleTriplet(handInput, cardsByLabel) ||
+        handlePair(handInput, cardsByLabel) ||
+        getHighestLabel(handInput)
+      );
     }
     case 1: {
       // Look for 4, then 3, then 2 pair (to make full house), then 2. Otherwise get highest to make a pair
-      const handWithQuad = handleQuad(handInput, cardsByLabel);
-      if (handWithQuad) return handWithQuad;
-
-      const handWithTriplet = handleTriplet(handInput, cardsByLabel);
-      if (handWithTriplet) return handWithTriplet;
-
-      const handWithPair = handlePair(handInput, cardsByLabel);
-      if (handWithPair) return handWithPair;
-
-      return getHighestLabel(handInput);
+      return (
+        handleQuad(handInput, cardsByLabel) ||
+        handleTriplet(handInput, cardsByLabel) ||
+        handlePair(handInput, cardsByLabel) ||
+        getHighestLabel(handInput)
+      );
     }
     default:
       return handInput;
@@ -114,18 +98,19 @@ function getCardsByLabel(hand) {
 }
 
 function getHandRank(hand) {
-  // const hand = maybeJokersWild(handInput, getCardsByLabel(handInput));
   const cardsByLabel = getCardsByLabel(hand);
   const handRank = Object.values(cardsByLabel).sort().join('');
-  return { rank: handRanks.indexOf(handRank), hand };
+  return handRanks.indexOf(handRank);
 }
 
-function sortHands([hand1Input], [hand2Input]) {
-  const { rank: hand1Rank, hand: hand1 } = getHandRank(hand1Input);
-  const { rank: hand2Rank, hand: hand2 } = getHandRank(hand2Input);
-  // console.log('hand1, hand1Rank', hand1, hand1Rank);
-  // console.log('hand2, hand2Rank', hand2, hand2Rank);
+// Guesses
+// 248057339
+// 247699618
 
+function sortHands(
+  { rank: hand1Rank, hand: hand1 },
+  { rank: hand2Rank, hand: hand2 },
+) {
   if (hand1Rank === hand2Rank) {
     for (let i = 0; i < 5; i++) {
       const h1Value = getLabelValue(hand1[i]);
@@ -133,17 +118,17 @@ function sortHands([hand1Input], [hand2Input]) {
       if (h1Value === h2Value) {
         continue;
       }
-      return h1Value > h2Value ? 1 : -1;
+      return h1Value > h2Value ? 1 : h2Value > h1Value ? -1 : 0;
     }
   }
 
-  return hand1Rank > hand2Rank ? 1 : -1;
+  return hand1Rank > hand2Rank ? 1 : hand2Rank > hand1Rank ? -1 : 0;
 }
 
 function getTotalWinnings(handsWithBids) {
   let total = 0;
   for (let i = 0; i < handsWithBids.length; i++) {
-    const [, bid] = handsWithBids[i];
+    const { bid } = handsWithBids[i];
     const handValue = Number(bid) * (i + 1);
     total += handValue;
   }
@@ -158,10 +143,16 @@ export default function main() {
     .trim()
     .split('\n')
     .map((l) => l.split(' '))
-    .map(([hand, bid]) => [maybeJokersWild(hand), bid])
+    .map(([hand, bid]) => ({
+      rank: getHandRank(maybeJokersWild(hand)),
+      hand,
+      bid,
+    }))
     .sort(sortHands);
 
-  console.log('hands', hands);
+  for (const hand of hands) {
+    console.log(hand);
+  }
   return getTotalWinnings(hands);
 }
 
