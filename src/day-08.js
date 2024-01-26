@@ -1,21 +1,8 @@
 import { parseCli } from './utils.js';
 
-globalThis.challengeNum = 1;
+// globalThis.challengeNum = 1;
 
-export default function main() {
-  const { CHALLENGE_NUM, dataType } = parseCli(process.argv);
-  globalThis.challengeNum = CHALLENGE_NUM;
-
-  const [instructions, nodeString] = (
-    data[dataType] || data[dataType + CHALLENGE_NUM]
-  ).split('\n\n');
-
-  const nodes = nodeString.split('\n').reduce((acc, line) => {
-    const [, key, L, R] = line.match(/(\w{3}) = \((\w{3}), (\w{3})\)/);
-    acc[key] = { L, R };
-    return acc;
-  }, {});
-
+function getStepsOne({ instructions, nodes }) {
   let steps = 0;
   let key = 'AAA';
   for (let i = 0; i < instructions.length; i++) {
@@ -35,6 +22,66 @@ export default function main() {
   }
 
   return steps;
+}
+
+function getStepsTwo({ instructions, nodes }) {
+  // gather starts (ending in A) from nodes
+  let steps = 0;
+  let keys = [];
+  for (const key of Object.keys(nodes)) {
+    if (key.endsWith('A')) {
+      keys.push(key);
+    }
+  }
+
+  // go through instructions, moving each start to the next step
+  for (let i = 0; i < instructions.length; i++) {
+    // console.log('keys', keys);
+    const curr = instructions[i];
+
+    let foundNonZ = false;
+    for (let j = 0; j < keys.length; j++) {
+      const key = keys[j];
+      keys[j] = nodes[key][curr];
+      if (!key.endsWith('Z')) {
+        foundNonZ = true;
+      }
+    }
+
+    if (!foundNonZ) {
+      break;
+    }
+
+    steps++;
+    foundNonZ = false;
+
+    if (i === instructions.length - 1) {
+      // console.log('resetting...');
+      i = -1;
+    }
+  }
+
+  // when entire group ends in Z, return
+  return steps;
+}
+
+export default function main() {
+  const { CHALLENGE_NUM, dataType } = parseCli(process.argv);
+  // globalThis.challengeNum = CHALLENGE_NUM;
+
+  const [instructions, nodeString] = (
+    data[dataType] || data[dataType + CHALLENGE_NUM]
+  ).split('\n\n');
+
+  const nodes = nodeString.split('\n').reduce((acc, line) => {
+    const [, key, L, R] = line.match(/(\w{3}) = \((\w{3}), (\w{3})\)/);
+    acc[key] = { L, R };
+    return acc;
+  }, {});
+
+  const getSteps = CHALLENGE_NUM === 1 ? getStepsOne : getStepsTwo;
+
+  return getSteps({ instructions, nodes });
 }
 
 const data = {
