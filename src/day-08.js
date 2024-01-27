@@ -36,27 +36,28 @@ function getStepsTwo({ instructions, nodes }) {
 
   // go through instructions, moving each start to the next step
   for (let i = 0; i < instructions.length; i++) {
-    // console.log('keys', keys);
     const curr = instructions[i];
 
-    let foundNonZ = false;
+    let numZs = 0;
     for (let j = 0; j < keys.length; j++) {
       const key = keys[j];
-      keys[j] = nodes[key][curr];
       if (!key.endsWith('Z')) {
-        foundNonZ = true;
+        numZs = 0;
+        break;
       }
+      keys[j] = nodes[key][curr];
+      numZs++;
     }
 
-    if (!foundNonZ) {
+    if (numZs === keys.length) {
       break;
     }
 
+    numZs = 0;
     steps++;
-    foundNonZ = false;
 
     if (i === instructions.length - 1) {
-      // console.log('resetting...');
+      console.log('resetting...');
       i = -1;
     }
   }
