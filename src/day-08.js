@@ -41,11 +41,11 @@ function getStepsTwo({ instructions, nodes }) {
     let numZs = 0;
     for (let j = 0; j < keys.length; j++) {
       const key = keys[j];
+      keys[j] = nodes[key][curr];
       if (!key.endsWith('Z')) {
         numZs = 0;
         break;
       }
-      keys[j] = nodes[key][curr];
       numZs++;
     }
 
