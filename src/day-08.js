@@ -35,16 +35,16 @@ function getStepsTwo({ instructions, nodes }) {
   }
 
   // go through instructions, moving each start to the next step
+  // TODO: Memoize
   for (let i = 0; i < instructions.length; i++) {
-    const curr = instructions[i];
+    const instructionLetter = instructions[i];
 
     let numZs = 0;
     for (let j = 0; j < keys.length; j++) {
       const key = keys[j];
-      keys[j] = nodes[key][curr];
+      keys[j] = nodes[key][instructionLetter];
       if (!key.endsWith('Z')) {
-        numZs = 0;
-        break;
+        continue;
       }
       numZs++;
     }
@@ -57,7 +57,7 @@ function getStepsTwo({ instructions, nodes }) {
     steps++;
 
     if (i === instructions.length - 1) {
-      console.log('resetting...');
+      // console.log('resetting...');
       i = -1;
     }
   }
