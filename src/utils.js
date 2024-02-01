@@ -16,3 +16,7 @@ export function parseCli(argv) {
 
   return { CHALLENGE_NUM, dataType };
 }
+
+export const sum = (arr) => arr.reduce((a, c) => a + c, 0);
+
+export const getLines = (input) => input.trim().split('\n');

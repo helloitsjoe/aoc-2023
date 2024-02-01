@@ -1,4 +1,8 @@
-import { getNextLevel, getNextInSequence } from '../day-09.js';
+import {
+  getNextLevel,
+  getNextInSequence,
+  processSequences,
+} from '../day-09.js';
 
 // beforeEach(() => {
 //   globalThis.challengeNum = 2;
@@ -30,13 +34,13 @@ describe('getNextInSequence', () => {
   });
 });
 
-// describe('processSequences', () => {
-//   it('basic', () => {
-//     const input = [
-//       [0, 3, 6, 9, 12, 15],
-//       [1, 3, 6, 10, 15, 21],
-//       [10, 13, 16, 21, 30, 45],
-//     ];
-//     expect(processSequences(input)).toEqual([18, 28, 68]);
-//   });
-// });
+describe('processSequences', () => {
+  it('basic', () => {
+    const input = [
+      [0, 3, 6, 9, 12, 15],
+      [1, 3, 6, 10, 15, 21],
+      [10, 13, 16, 21, 30, 45],
+    ];
+    expect(processSequences(input)).toEqual([18, 28, 68]);
+  });
+});
