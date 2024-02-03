@@ -35,16 +35,33 @@ export function getNextInSequence(sequence) {
   return lastNum;
 }
 
-export const processSequences = (sequences) => sequences.map(getNextInSequence);
+export function getPrevInSequence(sequence) {
+  const levels = assembleLevels([...sequence]);
+
+  for (let i = levels.length - 1; i >= 0; i--) {
+    const level = levels[i];
+    const nextLevel = levels[i - 1];
+
+    if (nextLevel != null) {
+      nextLevel.unshift(nextLevel.at(0) - level.at(0));
+    }
+  }
+
+  const lastNum = levels[0].at(0);
+  return lastNum;
+}
+
+export const processSequences = (sequences, challengeNum = 1) =>
+  sequences.map(challengeNum === 1 ? getNextInSequence : getPrevInSequence);
 
 // Part 1: Find the sum of all lines' next number
 export default function main() {
-  const { dataType } = parseCli(process.argv);
+  const { dataType, CHALLENGE_NUM } = parseCli(process.argv);
   const sequences = getLines(data[dataType]).map((l) =>
     l.split(' ').map(Number),
   );
 
-  return sum(processSequences(sequences));
+  return sum(processSequences(sequences, CHALLENGE_NUM));
 }
 
 const data = {

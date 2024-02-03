@@ -1,6 +1,7 @@
 import {
   getNextLevel,
   getNextInSequence,
+  getPrevInSequence,
   processSequences,
 } from '../day-09.js';
 
@@ -31,6 +32,17 @@ describe('getNextInSequence', () => {
     ${[1, 3, 6, 10, 15]} | ${21}
   `('$sequence', ({ sequence, next }) => {
     expect(getNextInSequence(sequence)).toEqual(next);
+  });
+});
+
+describe('getPrevInSequence', () => {
+  it.each`
+    sequence             | prev
+    ${[1, 1, 1]}         | ${1}
+    ${[1, 2, 3]}         | ${0}
+    ${[1, 3, 6, 10, 15]} | ${0}
+  `('$sequence', ({ sequence, prev }) => {
+    expect(getPrevInSequence(sequence)).toEqual(prev);
   });
 });
 
