@@ -2,7 +2,8 @@ export function parseCli(argv) {
   const [, , num, type] = argv;
 
   if ((!num || num === 'test') && !type) {
-    return { CHALLENGE_NUM: 1, dataType: 'test' };
+    const getData = (data) => data.test.trim();
+    return { CHALLENGE_NUM: 1, dataType: 'test', getData };
   }
 
   const CHALLENGE_NUM = Number(num || 1);
@@ -13,8 +14,9 @@ export function parseCli(argv) {
   }
 
   const dataType = argv[3] || 'test';
+  const getData = (data) => data[dataType].trim();
 
-  return { CHALLENGE_NUM, dataType };
+  return { CHALLENGE_NUM, dataType, getData };
 }
 
 export const sum = (arr) => arr.reduce((a, c) => a + c, 0);

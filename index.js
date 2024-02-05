@@ -1,4 +1,4 @@
-import main from './src/day-09.js';
+import main from './src/day-10.js';
 
 (async () => {
   const start = Date.now();

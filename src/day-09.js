@@ -56,8 +56,8 @@ export const processSequences = (sequences, challengeNum = 1) =>
 
 // Part 1: Find the sum of all lines' next number
 export default function main() {
-  const { dataType, CHALLENGE_NUM } = parseCli(process.argv);
-  const sequences = getLines(data[dataType]).map((l) =>
+  const { getData, CHALLENGE_NUM } = parseCli(process.argv);
+  const sequences = getLines(getData(data)).map((l) =>
     l.split(' ').map(Number),
   );
 
