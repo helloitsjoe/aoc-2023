@@ -57,12 +57,39 @@ export function getStartPipePair(arr, startCoords) {
   return coords;
 }
 
+export function getMax([left, right], pipes) {
+  let max = 0;
+  let currLeft = { ...left };
+  let currRight = { ...right };
+
+  // TODO: Account for previous direction
+  console.log('currLeft', currLeft);
+  console.log('currRight', currRight);
+
+  for (let i = 0; i < 1_000_000; i++) {
+    const nextLeft = nextMove[pipes[currLeft.y][currLeft.x]];
+    console.log('nextLeft', nextLeft);
+    if (
+      (currLeft.x === currRight.x && currLeft.y === currRight.y) ||
+      (nextLeft.x === currRight.x && nextLeft.y === currRight.y)
+    ) {
+      break;
+    }
+
+    const nextRight = nextMove[pipes[currRight.y][currRight.x]];
+    currLeft = { ...nextLeft };
+    currRight = { ...nextRight };
+  }
+
+  return max;
+}
+
 export default function main() {
   const { getData } = parseCli(process.argv);
-  const arr = arrayify(getData(data));
-  const startCoords = getStartCoords(arr);
-  const startPipePair = getStartPipePair(arr, startCoords);
-  return arr;
+  const pipes = arrayify(getData(data));
+  const startCoords = getStartCoords(pipes);
+  const startPipePair = getStartPipePair(pipes, startCoords);
+  return getMax(startPipePair, pipes);
 }
 
 const data = {
