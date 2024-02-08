@@ -1,6 +1,6 @@
 import { parseCli, getLines } from './utils.js';
 
-const getDelta = (curr) => {
+export const getDelta = (curr) => {
   switch (curr) {
     case '-':
       return [
@@ -9,45 +9,57 @@ const getDelta = (curr) => {
       ];
     case '|':
       return [
-        { x: 0, y: 1 },
         { x: 0, y: -1 },
+        { x: 0, y: 1 },
       ];
     case 'F':
+      return [
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+      ];
     case 'J':
       return [
-        { x: 1, y: 1 },
-        { x: -1, y: -1 },
+        { x: 0, y: -1 },
+        { x: -1, y: 0 },
       ];
     case 'L':
+      return [
+        { x: 1, y: 0 },
+        { x: 0, y: -1 },
+      ];
     case '7':
       return [
-        { x: -1, y: 1 },
-        { x: 1, y: -1 },
+        { x: 0, y: 1 },
+        { x: -1, y: 0 },
       ];
   }
 };
 
-export function getPrevDir(prevCoords, currCoords) {
+export function getPrevDir(prevCoords, currCoords, currChar) {
   const deltaX = currCoords.x - prevCoords.x;
   const deltaY = currCoords.y - prevCoords.y;
 
   switch (`${deltaX},${deltaY}`) {
     case '1,0':
-    case '0,-1':
       return 0;
+    case '0,-1':
+      if (currChar === '7') return 1;
+      return 0;
+    case '0,1':
+      if (currChar === 'L') return 0;
+      return 1;
     default:
       return 1;
   }
 }
 
 export function getNextCoords(prevCoords, currCoords, pipes) {
-  console.log('pipes', pipes);
-  console.log('currCoords', currCoords);
   const currChar = pipes[currCoords.y][currCoords.x];
-  console.log('currChar', currChar);
   // 0 === W or S, 1 === E or N
-  let prevDir = getPrevDir(prevCoords, currCoords);
-  const delta = getDelta(currChar)[prevDir];
+  let prevDir = getPrevDir(prevCoords, currCoords, currChar);
+  const deltas = getDelta(currChar);
+  const delta = deltas[prevDir];
+
   return { x: currCoords.x + delta.x, y: currCoords.y + delta.y };
 }
 
@@ -82,25 +94,23 @@ export function getStartPipePair(arr, startCoords) {
 }
 
 export function getMax([left, right], startCoords, pipes) {
-  let max = 0;
+  let max = 1;
   let prevLeft = { ...startCoords };
   let prevRight = { ...startCoords };
   let currLeft = { ...left };
   let currRight = { ...right };
 
-  console.log('currLeft', currLeft);
-  console.log('currRight', currRight);
-
   for (let i = 0; i < 1_000_000; i++) {
     // const nextLeft = nextMove[pipes[currLeft.y][currLeft.x]];
     const nextLeft = getNextCoords(prevLeft, currLeft, pipes);
-    console.log('nextLeft', nextLeft);
     if (
       (currLeft.x === currRight.x && currLeft.y === currRight.y) ||
       (nextLeft.x === currRight.x && nextLeft.y === currRight.y)
     ) {
       break;
     }
+
+    max++;
 
     // const nextRight = nextMove[pipes[currRight.y][currRight.x]];
     const nextRight = getNextCoords(prevRight, currRight, pipes);

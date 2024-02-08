@@ -2,6 +2,7 @@ import {
   getStartCoords,
   getStartPipePair,
   getPrevDir,
+  getDelta,
   getMax,
   arrayify,
 } from '../day-10.js';
@@ -58,24 +59,28 @@ SJ
 
 describe('getPrevDir', () => {
   it('returns 0 when coming from south or west', () => {
-    expect(getPrevDir({ x: 0, y: 1 }, { x: 0, y: 0 })).toBe(0); // S
-    expect(getPrevDir({ x: 0, y: 0 }, { x: 1, y: 0 })).toBe(0); // W
+    expect(getPrevDir({ x: 0, y: 1 }, { x: 0, y: 0 }, '|')).toBe(0); // S
+    expect(getPrevDir({ x: 0, y: 0 }, { x: 1, y: 0 }, '-')).toBe(0); // W
   });
 
   it('returns 1 when coming from north or east', () => {
-    expect(getPrevDir({ x: 0, y: 0 }, { x: 0, y: 1 })).toBe(1);
-    expect(getPrevDir({ x: 1, y: 0 }, { x: 0, y: 0 })).toBe(1);
+    expect(getPrevDir({ x: 0, y: 0 }, { x: 0, y: 1 }, '|')).toBe(1);
+    expect(getPrevDir({ x: 1, y: 0 }, { x: 0, y: 0 }, '-')).toBe(1);
+  });
+
+  it('returns 1 for 7 when coming from south, 0 from west', () => {
+    expect(getPrevDir({ x: 0, y: 1 }, { x: 0, y: 0 }, '7')).toBe(1);
+    expect(getPrevDir({ x: 0, y: 0 }, { x: 1, y: 0 }, '7')).toBe(0);
+  });
+
+  it('returns 0 for L when coming from north, 1 from east', () => {
+    expect(getPrevDir({ x: 0, y: 0 }, { x: 0, y: 1 }, 'L')).toBe(0);
+    expect(getPrevDir({ x: 1, y: 0 }, { x: 0, y: 0 }, 'L')).toBe(1);
   });
 });
 
 describe('getMax', () => {
-  fit('works', () => {
-    // const input = `
-    // 7-F7-
-    // .FJ|7
-    // SJLL7
-    // |F--J
-    // LJ.LJ`;
+  it('works with square', () => {
     const input = `
 .....
 .S-7.
@@ -86,5 +91,32 @@ describe('getMax', () => {
     const startCoords = getStartCoords(pipes);
     const startPipePair = getStartPipePair(pipes, startCoords);
     expect(getMax(startPipePair, startCoords, pipes)).toBe(4);
+  });
+
+  it('works with test input', () => {
+    const input = `
+7-F7-
+.FJ|7
+SJLL7
+|F--J
+LJ.LJ`;
+    const pipes = arrayify(input);
+    const startCoords = getStartCoords(pipes);
+    const startPipePair = getStartPipePair(pipes, startCoords);
+    expect(getMax(startPipePair, startCoords, pipes)).toBe(8);
+  });
+});
+
+describe('getDelta', () => {
+  it.each`
+    char   | expected
+    ${'|'} | ${[{ x: 0, y: -1 }, { x: 0, y: 1 }]}
+    ${'-'} | ${[{ x: 1, y: 0 }, { x: -1, y: 0 }]}
+    ${'F'} | ${[{ x: 1, y: 0 }, { x: 0, y: 1 }]}
+    ${'J'} | ${[{ x: 0, y: -1 }, { x: -1, y: 0 }]}
+    ${'7'} | ${[{ x: 0, y: 1 }, { x: -1, y: 0 }]}
+    ${'L'} | ${[{ x: 1, y: 0 }, { x: 0, y: -1 }]}
+  `('$char', ({ char, expected }) => {
+    expect(getDelta(char)).toEqual(expected);
   });
 });
