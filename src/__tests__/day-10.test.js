@@ -4,8 +4,8 @@ import {
   getPrevDir,
   getDelta,
   getMax,
-  arrayify,
 } from '../day-10.js';
+import { arrayify } from '../utils.js';
 
 describe('getStartCoords', () => {
   it('basic', () => {

@@ -1,4 +1,4 @@
-import { parseCli, getLines } from './utils.js';
+import { parseCli, arrayify } from './utils.js';
 
 export const getDelta = (curr) => {
   switch (curr) {
@@ -70,8 +70,6 @@ export function getStartCoords(arr) {
     }
   }
 }
-
-export const arrayify = (str) => getLines(str).map((l) => l.split(''));
 
 export function getStartPipePair(arr, startCoords) {
   const { x, y } = startCoords;

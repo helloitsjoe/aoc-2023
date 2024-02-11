@@ -22,3 +22,5 @@ export function parseCli(argv) {
 export const sum = (arr) => arr.reduce((a, c) => a + c, 0);
 
 export const getLines = (input) => input.trim().split('\n');
+
+export const arrayify = (str) => getLines(str).map((l) => l.split(''));
